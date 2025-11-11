@@ -13,6 +13,7 @@ import src.metrics as metrics
 import src.model.vLLM as LLM
 import src.vectorDB as LoadVectorize
 from src.scoring import iou_per_class
+from src.comparison_classifier import improve_assign_condition_comparison
 
 
 def pipe(
@@ -29,6 +30,7 @@ def pipe(
     model_path_2,
     faiss_index,
     terminologies,
+    use_comparison_method=True,  # NEW: Use COLING 2025 comparison paradigm
 ):
     use_remove_list = True
     use_add_list = True
@@ -236,13 +238,26 @@ def pipe(
             print(f"macro-averaged character IoU metric: {np.mean(ious):0.4f}")
             df_notes.to_parquet(df_notes_parquet_backup, compression="gzip")
 
-        improve_assign_condition(
-            model_classification_path,
-            model_path_cache,
-            df_notes,
-            classification_template,
-            is_submission=is_submission,
-        )
+        # Use comparison-based method (COLING 2025) or original method
+        if use_comparison_method:
+            print("\n🚀 Using COMPARISON-BASED classification (COLING 2025 paper)")
+            improve_assign_condition_comparison(
+                model_classification_path,
+                model_path_cache,
+                df_notes,
+                classification_template,
+                is_submission=is_submission,
+                min_confidence=0.6,  # Configurable threshold
+            )
+        else:
+            print("\n Using ORIGINAL classification (selection-based)")
+            improve_assign_condition(
+                model_classification_path,
+                model_path_cache,
+                df_notes,
+                classification_template,
+                is_submission=is_submission,
+            )
 
     df_annotations_inf = save_submision(
         df_notes, file_paths_submission, is_submission=is_submission

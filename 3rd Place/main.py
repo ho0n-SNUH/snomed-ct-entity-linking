@@ -35,6 +35,7 @@ def main(
     terminologies: str = os.path.join(ASSETS_PATH, "newdict_snomed_extended.txt"),
     ANNOTATIONS_PATH: Optional[str] = None,
     SUBMISSION_PATH: str = "submission.csv",
+    use_comparison_method: bool = True,  # NEW: Enable COLING 2025 comparison paradigm
 ):
     """Processes notes using the trained models.
 
@@ -51,6 +52,8 @@ def main(
             inference when we want to save a dataframe of annotations to then use to generate
             remove and add lists in remove-add-lists.py
         SUBMISSION_PATH (str): Path to save the submission file.
+        use_comparison_method (bool): Use comparison-based classification (COLING 2025 paper).
+            Default: True. Set to False to use original selection-based method.
 
     """
 
@@ -66,6 +69,12 @@ def main(
         base_model_path, model_classification_path_peft, model_classification_path
     )
 
+    print(f"\n{'='*80}")
+    print(f"SNOMED CT Entity Linking Pipeline")
+    print(f"{'='*80}")
+    print(f"Classification method: {'COMPARISON (COLING 2025)' if use_comparison_method else 'ORIGINAL (Selection)'}")
+    print(f"{'='*80}\n")
+
     snomedctentitylinking.pipe(
         NOTES_PATH,
         SUBMISSION_PATH,
@@ -80,6 +89,7 @@ def main(
         model_path_2,
         faiss_index,
         terminologies,
+        use_comparison_method=use_comparison_method,  # NEW parameter
     )
 
 
